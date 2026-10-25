@@ -1,0 +1,325 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YRNovatech Task Tracker | Full Stack Application</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Remix Icon (for clean, crisp SVG icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Main Application Wrapper -->
+    <div class="app-layout">
+        <!-- Header / Navigation Bar -->
+        <header class="navbar">
+            <div class="navbar-container">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="ri-checkbox-circle-fill"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>TaskTracker<span class="brand-badge">YRNovatech</span></h1>
+                        <p class="brand-subtitle">Internship Task 5 • Full Stack Suite</p>
+                    </div>
+                </div>
+
+                <div class="navbar-actions">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="btn btn-icon" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
+                        <i class="ri-moon-line" id="theme-icon"></i>
+                    </button>
+                    <!-- Quick Add Task Button -->
+                    <button id="btn-open-create-modal" class="btn btn-primary">
+                        <i class="ri-add-line"></i>
+                        <span>New Task</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Summary Dashboard Statistics Cards -->
+            <section class="stats-grid" id="stats-section" aria-label="Task Summary">
+                <div class="stat-card stat-total">
+                    <div class="stat-icon-wrap"><i class="ri-folders-line"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Tasks</span>
+                        <h2 class="stat-value" id="stat-total">0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-pending">
+                    <div class="stat-icon-wrap"><i class="ri-time-line"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Pending</span>
+                        <h2 class="stat-value" id="stat-pending">0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-in-progress">
+                    <div class="stat-icon-wrap"><i class="ri-loader-4-line"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">In Progress</span>
+                        <h2 class="stat-value" id="stat-in-progress">0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card stat-completed">
+                    <div class="stat-icon-wrap"><i class="ri-check-double-line"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Completed</span>
+                        <h2 class="stat-value" id="stat-completed">0</h2>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Completion Rate Progress Bar -->
+            <div class="progress-bar-card">
+                <div class="progress-meta">
+                    <span class="progress-label"><i class="ri-pie-chart-line"></i> Overall Completion Rate</span>
+                    <span class="progress-percentage" id="stat-completion-rate">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="stat-progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Controls: Search, Filters, Sorting -->
+            <section class="toolbar-section">
+                <div class="search-box">
+                    <i class="ri-search-line search-icon"></i>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Search tasks by title or description..." 
+                        autocomplete="off"
+                        aria-label="Search tasks"
+                    >
+                    <button id="search-clear-btn" class="search-clear-btn hidden" title="Clear search">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+
+                <div class="filters-row">
+                    <!-- Status Filter -->
+                    <div class="select-group">
+                        <label for="filter-status"><i class="ri-filter-3-line"></i> Status:</label>
+                        <select id="filter-status">
+                            <option value="">All Statuses</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="COMPLETED">Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Priority Filter -->
+                    <div class="select-group">
+                        <label for="filter-priority"><i class="ri-flag-line"></i> Priority:</label>
+                        <select id="filter-priority">
+                            <option value="">All Priorities</option>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                    </div>
+
+                    <!-- Ordering -->
+                    <div class="select-group">
+                        <label for="sort-order"><i class="ri-sort-desc"></i> Sort By:</label>
+                        <select id="sort-order">
+                            <option value="-created_at">Newest First</option>
+                            <option value="created_at">Oldest First</option>
+                            <option value="due_date">Due Date (Earliest)</option>
+                            <option value="-due_date">Due Date (Latest)</option>
+                            <option value="title">Title (A-Z)</option>
+                            <option value="-title">Title (Z-A)</option>
+                        </select>
+                    </div>
+
+                    <!-- Reset Filters Button -->
+                    <button id="btn-reset-filters" class="btn btn-secondary btn-sm" title="Reset all search and filters">
+                        <i class="ri-refresh-line"></i> Reset
+                    </button>
+                </div>
+            </section>
+
+            <!-- Tasks List / Grid Section -->
+            <section class="tasks-section" aria-live="polite">
+                <!-- Loading State Skeleton -->
+                <div id="tasks-loading" class="skeleton-grid hidden">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="tasks-empty" class="empty-state hidden">
+                    <div class="empty-icon"><i class="ri-inbox-archive-line"></i></div>
+                    <h3>No tasks found</h3>
+                    <p id="empty-state-message">Get started by creating your first task, or adjust your search filters.</p>
+                    <button class="btn btn-primary" id="btn-empty-create">
+                        <i class="ri-add-line"></i> Create Task
+                    </button>
+                </div>
+
+                <!-- Active Tasks Grid -->
+                <div id="tasks-grid" class="tasks-grid"></div>
+
+                <!-- Pagination Container -->
+                <nav class="pagination-container" id="pagination-nav" aria-label="Task list pagination">
+                    <div class="pagination-info" id="pagination-info">
+                        Showing 0 of 0 tasks
+                    </div>
+                    <div class="pagination-buttons" id="pagination-controls">
+                        <!-- Dynamically populated buttons -->
+                    </div>
+                </nav>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>YRNovatech Internship • Task 5: Full Stack Task Tracker Application • Built with Django REST Framework & Vanilla Web Technologies</p>
+        </footer>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL: Create / Edit Task -->
+    <!-- =================================================================== -->
+    <div id="task-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-heading">Create New Task</h3>
+                <button class="modal-close-btn" id="btn-close-modal" aria-label="Close modal">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+            <form id="task-form" novalidate>
+                <input type="hidden" id="task-id" value="">
+
+                <!-- Task Title Field -->
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="task-title">Task Title <span class="required-star">*</span></label>
+                        <span class="char-counter" id="title-counter">0/200</span>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="task-title" 
+                        class="form-control" 
+                        placeholder="e.g. Design relational schema in PostgreSQL" 
+                        maxlength="200" 
+                        required
+                    >
+                    <div class="field-error" id="error-title"></div>
+                </div>
+
+                <!-- Task Description Field -->
+                <div class="form-group">
+                    <div class="form-label-row">
+                        <label for="task-description">Description</label>
+                        <span class="char-counter" id="desc-counter">0/1000</span>
+                    </div>
+                    <textarea 
+                        id="task-description" 
+                        class="form-control" 
+                        rows="3" 
+                        placeholder="Provide task specifications, acceptance criteria, or notes..." 
+                        maxlength="1000"
+                    ></textarea>
+                    <div class="field-error" id="error-description"></div>
+                </div>
+
+                <!-- Status & Priority Row -->
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="task-status">Status</label>
+                        <select id="task-status" class="form-control">
+                            <option value="PENDING">Pending</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="COMPLETED">Completed</option>
+                        </select>
+                        <div class="field-error" id="error-status"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority" class="form-control">
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                        <div class="field-error" id="error-priority"></div>
+                    </div>
+                </div>
+
+                <!-- Due Date Field -->
+                <div class="form-group">
+                    <label for="task-due-date">Due Date</label>
+                    <input type="date" id="task-due-date" class="form-control">
+                    <div class="field-error" id="error-due_date"></div>
+                </div>
+
+                <!-- General Form Error -->
+                <div class="form-general-error hidden" id="form-general-error"></div>
+
+                <!-- Modal Actions -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-task">
+                        <span class="btn-spinner hidden" id="save-spinner"></span>
+                        <span id="save-btn-text">Save Task</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL: Delete Confirmation -->
+    <!-- =================================================================== -->
+    <div id="delete-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <div class="modal-box modal-box-sm">
+            <div class="delete-icon-banner">
+                <i class="ri-error-warning-line"></i>
+            </div>
+            <div class="modal-header text-center">
+                <h3 id="delete-modal-title" class="modal-heading">Confirm Task Deletion</h3>
+            </div>
+            <div class="modal-body text-center">
+                <p>Are you sure you want to delete <strong id="delete-task-title">this task</strong>?</p>
+                <p class="text-muted text-sm mt-1">This action cannot be undone and will permanently remove it from the database.</p>
+            </div>
+            <div class="modal-footer justify-center">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-delete">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btn-confirm-delete">
+                    <span class="btn-spinner hidden" id="delete-spinner"></span>
+                    <span>Delete Permanently</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF Token Meta/Helper (for Django standard security) -->
+    {% csrf_token %}
+
+    <!-- Application JavaScript -->
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
